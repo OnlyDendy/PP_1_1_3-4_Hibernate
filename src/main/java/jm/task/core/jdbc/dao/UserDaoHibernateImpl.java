@@ -27,7 +27,7 @@ public class UserDaoHibernateImpl implements UserDao {
             VALUES (?, ?, ?)""";
     private static final String getUsersSQLHibernate = "FROM User";
     private static final String removeUserSQLHibernate = "DELETE FROM users WHERE id = ?";
-    private static final String clearTableHibernate = "TRUNCATE users";
+    private static final String clearTableHibernate = "DELETE User";
 
     private static final SessionFactory sessionFactory = Util.getSessionFactory();
 
@@ -99,16 +99,15 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public List<User> getAllUsers() {
-        Transaction transaction = null;
         Session session = sessionFactory.openSession();
         List<User> users = null;
         try (session) {
-            transaction = session.beginTransaction();
-            users = session.createQuery(getUsersSQLHibernate).getResultList();
+            session.beginTransaction();
+            users = session.createQuery(getUsersSQLHibernate, User.class).getResultList();
             for (User result : users) {
                 System.out.println(result);
             }
-            transaction.commit();
+            session.getTransaction().commit();
         } catch (Exception e) {
             if (session != null) session.getTransaction().rollback();
             e.printStackTrace();
@@ -123,7 +122,7 @@ public class UserDaoHibernateImpl implements UserDao {
         Session session = sessionFactory.openSession();
         try (session) {
             transaction = session.beginTransaction();
-            session.createSQLQuery(clearTableHibernate).executeUpdate();
+            session.createQuery(clearTableHibernate).executeUpdate();
             transaction.commit();
         } catch (Exception e) {
             if (session != null) session.getTransaction().rollback();
